@@ -16,7 +16,7 @@ ADMIN_ID = 6830887977
 
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s',
-    level=logging.DEBUG #DEBUG level logging
+    level=logging.INFO
 )
 logger = logging.getLogger(__name__)  # Create a logger object
 
@@ -159,7 +159,7 @@ async def upload(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message.photo:
         await update.message.reply_text("Please upload a photo.")
         return
-    
+
     if not os.path.exists(QR_DIR):
       os.makedirs(QR_DIR)
 
@@ -168,7 +168,7 @@ async def upload(update: Update, context: ContextTypes.DEFAULT_TYPE):
     file_path = os.path.join(QR_DIR, DEFAULT_QR_NAME)
     try:
       await new_file.download_to_drive(file_path)
-      await update.message.reply_text(f"QR code uploaded successfully!\n Path: {file_path}")
+      await update.message.reply_text(f"QR code uploaded successfully!") # Removed file path
     except Exception as e:
         logger.error(f"Error downloading file: {e}")
         await update.message.reply_text("Error while uploading QR code.")
@@ -201,12 +201,12 @@ async def remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
 #New buy command
 
 async def buy(update: Update, context: ContextTypes.DEFAULT_TYPE):
-  
-    if not os.path.exists(os.path.join(QR_DIR, DEFAULT_QR_NAME)):
+    qr_path = os.path.join(QR_DIR, DEFAULT_QR_NAME)
+    if not os.path.exists(qr_path):
       await update.message.reply_text("QR code is not uploaded by Admin yet, please try again later.")
       return
 
-    with open(os.path.join(QR_DIR, DEFAULT_QR_NAME), 'rb') as photo:
+    with open(qr_path, 'rb') as photo:
         await context.bot.send_photo(
             chat_id=update.effective_chat.id,
             photo=photo,
