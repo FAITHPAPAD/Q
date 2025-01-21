@@ -15,9 +15,11 @@ DEFAULT_QR_NAME = "default_qr.png"
 ADMIN_ID = 6830887977
 
 logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    level=logging.DEBUG #DEBUG level logging
 )
+logger = logging.getLogger(__name__)  # Create a logger object
+
 
 def load_data():
     global authorized_users, keys
@@ -117,7 +119,7 @@ async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
        try:
           await context.bot.send_message(chat_id=user_id, text=message)
        except Exception as e:
-            logging.error(f"Error sending message to user {user_id}: {e}")
+            logger.error(f"Error sending message to user {user_id}: {e}")
     
     await update.message.reply_text("Message broadcasted successfully.")
 
@@ -164,8 +166,12 @@ async def upload(update: Update, context: ContextTypes.DEFAULT_TYPE):
     file_id = update.message.photo[-1].file_id
     new_file = await context.bot.get_file(file_id)
     file_path = os.path.join(QR_DIR, DEFAULT_QR_NAME)
-    await new_file.download_to_drive(file_path)
-    await update.message.reply_text(f"QR code uploaded successfully!\n Path: {file_path}")
+    try:
+      await new_file.download_to_drive(file_path)
+      await update.message.reply_text(f"QR code uploaded successfully!\n Path: {file_path}")
+    except Exception as e:
+        logger.error(f"Error downloading file: {e}")
+        await update.message.reply_text("Error while uploading QR code.")
 
 
 # New Remove command
@@ -264,6 +270,6 @@ def main() -> None:
     load_data()
     application.run_polling()
 
-if name == 'main':
+if __name__ == '__main__':
     main()
 #zaher_ddos
